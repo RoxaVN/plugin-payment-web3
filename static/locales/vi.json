@@ -1,7 +1,8 @@
 {
-  "myModel": "Model của tôi",
+  "web3DepositSetting": "Cài đặt nạp tiền qua web3",
+  "recipientAddress": "Địa chỉ nhận",
   "Meta": {
-    "name": "Module mẫu",
-    "description": "Module mẫu"
+    "name": "Thanh toán web3",
+    "description": "Thanh toán qua web3"
   }
 }

@@ -1,9 +1,7 @@
 import { InferApiRequest } from '@roxavn/core/base';
 import { BaseService, inject } from '@roxavn/core/server';
-import {
-  UpsertSettingService,
-  serverModule as utilsServerModule,
-} from '@roxavn/module-utils/server';
+import { UpsertSettingService } from '@roxavn/module-utils/server';
+import { serverModule as currencyServerModule } from '@roxavn/module-currency/server';
 
 import { constants, settingApi } from '../../base/index.js';
 import { serverModule } from '../module.js';
@@ -21,7 +19,7 @@ export class UpdateWeb3DepositSettingApiService extends BaseService {
     request: InferApiRequest<typeof settingApi.updateWeb3DepositSetting>
   ) {
     return this.updateSettingService.handle({
-      module: utilsServerModule.name,
+      module: currencyServerModule.name,
       name: constants.WEB3_DEPOSIT_SETTING,
       metadata: request,
       type: 'private',

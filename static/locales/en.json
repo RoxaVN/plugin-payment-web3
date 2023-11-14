@@ -1,7 +1,8 @@
 {
-  "myModel": "My model",
+  "web3DepositSetting": "Web3 deposit setting",
+  "recipientAddress": "Recipient address",
   "Meta": {
-    "name": "Sample module",
-    "description": "Sample module"
+    "name": "Plugin payment web3",
+    "description": "Plugin payment via web3"
   }
 }

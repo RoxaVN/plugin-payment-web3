@@ -44,6 +44,7 @@
   },
   "exports": {
     ".": "./dist/esm/index.js",
+    "./web/init": "./dist/esm/web/init.js",
     "./web": "./dist/esm/web/index.js",
     "./base": "./dist/esm/base/index.js",
     "./server": "./dist/esm/server/index.js"
@@ -52,6 +53,9 @@
     "*": {
       "web": [
         "dist/esm/web/index.d.ts"
+      ],
+      "web/init": [
+        "dist/esm/web/init.d.ts"
       ],
       "base": [
         "dist/esm/base/index.d.ts"
