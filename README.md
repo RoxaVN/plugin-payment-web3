@@ -1,1 +1,7 @@
-# plugin-payment-web3
+# @roxavn/plugin-payment-web3
+
+## Release
+
+```
+npx standard-version
+```
