@@ -37,10 +37,12 @@
     "@roxavn/module-currency": "^0.1.0",
     "@roxavn/module-web3": "^0.1.0",
     "@roxavn/plugin-payment": "^0.1.0",
+    "@roxavn/plugin-web3-auth": "^0.1.0",
     "@tabler/icons-react": "^2.12.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "typeorm": "^0.3.10"
+    "typeorm": "^0.3.10",
+    "viem": "1.7.0"
   },
   "exports": {
     ".": "./dist/esm/index.js",

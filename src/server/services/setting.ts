@@ -22,7 +22,7 @@ export class UpdateWeb3DepositSettingApiService extends BaseService {
       module: currencyServerModule.name,
       name: constants.WEB3_DEPOSIT_SETTING,
       metadata: request,
-      type: 'private',
+      type: 'public',
     });
   }
 }

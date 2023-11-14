@@ -15,7 +15,7 @@ const settingSource = new ApiSource<SettingResponse>(
   baseModule
 );
 
-class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettingRequest> {
+export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettingRequest> {
   @MinLength(1)
   contractId: string;
 
@@ -23,7 +23,7 @@ class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettin
   recipientAddress: `0x${string}`;
 
   @Min(1)
-  currencyId: number;
+  currencyId: string;
 
   @IsPositive()
   exchangeRate: number;

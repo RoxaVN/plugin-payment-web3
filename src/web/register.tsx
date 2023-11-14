@@ -32,7 +32,7 @@ export default function () {
           {
             name: 'currencyId',
             input: (
-              <NumberInput
+              <TextInput
                 label={<ModuleT module={currencyWebModule} k="currencyId" />}
               />
             ),
