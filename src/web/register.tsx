@@ -16,7 +16,7 @@ export default function () {
           {
             name: 'contractId',
             input: (
-              <NumberInput
+              <TextInput
                 label={<ModuleT module={web3WebModule} k="contractId" />}
               />
             ),
@@ -25,7 +25,7 @@ export default function () {
             name: 'recipientAddress',
             input: (
               <TextInput
-                label={<ModuleT module={web3WebModule} k="contractId" />}
+                label={<ModuleT module={webModule} k="recipientAddress" />}
               />
             ),
           },
