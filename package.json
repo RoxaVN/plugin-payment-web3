@@ -31,6 +31,7 @@
   },
   "peerDependencies": {
     "@mantine/core": "^6.0.0",
+    "@mantine/form": "^6.0.0",
     "@remix-run/node": "^1.19.1",
     "@remix-run/react": "^1.19.1",
     "@roxavn/core": "^0.2.0",
@@ -42,7 +43,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typeorm": "^0.3.10",
-    "viem": "1.7.0"
+    "viem": "1.7.0",
+    "wagmi": "^1.3.10"
   },
   "exports": {
     ".": "./dist/esm/index.js",

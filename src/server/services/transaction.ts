@@ -23,6 +23,7 @@ import {
   NotLinkedAddressException,
 } from '@roxavn/plugin-web3-auth/base';
 import { createPublicClient, decodeEventLog, http, isAddressEqual } from 'viem';
+import { erc20ABI } from 'wagmi';
 
 import {
   UpdateWeb3DepositSettingRequest,
@@ -57,11 +58,8 @@ export class DepositTransactionApiService extends BaseService {
       name: constants.WEB3_DEPOSIT_SETTING,
     })) as UpdateWeb3DepositSettingRequest;
 
-    const contract = await this.getWeb3ContractApiService.handle({
-      web3contractId: setting.contractId,
-    });
     const { items } = await this.getWeb3ProvidersApiService.handle({
-      networkId: contract.networkId,
+      networkId: setting.networkId,
     });
     const provider = items[0];
     if (provider) {
@@ -86,7 +84,7 @@ export class DepositTransactionApiService extends BaseService {
 
       for (const log of transaction.logs) {
         const event = decodeEventLog({
-          abi: contract.abi,
+          abi: erc20ABI,
           data: log.data,
           topics: log.topics,
         });
@@ -101,13 +99,11 @@ export class DepositTransactionApiService extends BaseService {
           });
           if (identity && identity.userId === authUser.id) {
             const decimal = await publicClient.readContract({
-              address: contract.address,
-              abi: contract.abi,
+              address: setting.contractAddress,
+              abi: erc20ABI,
               functionName: 'decimals',
-              args: [],
             });
-            const amount =
-              BigInt(eventData) / BigInt(10) ** BigInt(decimal[0] as any);
+            const amount = BigInt(eventData) / BigInt(10) ** BigInt(decimal);
 
             await this.createPaymentTransactionService.handle({
               account: {

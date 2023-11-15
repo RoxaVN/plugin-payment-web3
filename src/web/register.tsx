@@ -14,10 +14,18 @@ export default function () {
         api={settingApi.updateWeb3DepositSetting}
         fields={[
           {
-            name: 'contractId',
+            name: 'contractAddress',
             input: (
               <TextInput
-                label={<ModuleT module={web3WebModule} k="contractId" />}
+                label={<ModuleT module={web3WebModule} k="contractAddress" />}
+              />
+            ),
+          },
+          {
+            name: 'networkId',
+            input: (
+              <TextInput
+                label={<ModuleT module={web3WebModule} k="networkId" />}
               />
             ),
           },

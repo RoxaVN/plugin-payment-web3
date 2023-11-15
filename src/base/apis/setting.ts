@@ -17,7 +17,10 @@ const settingSource = new ApiSource<SettingResponse>(
 
 export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettingRequest> {
   @MinLength(1)
-  contractId: string;
+  contractAddress: `0x${string}`;
+
+  @MinLength(1)
+  networkId: string;
 
   @MinLength(1)
   recipientAddress: `0x${string}`;
