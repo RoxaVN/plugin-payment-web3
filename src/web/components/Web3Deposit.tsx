@@ -1,4 +1,4 @@
-import { Button, NumberInput, TextInput } from '@mantine/core';
+import { Button, NumberInput, Divider, TextInput } from '@mantine/core';
 import { Api, ValidationException } from '@roxavn/core';
 import {
   ApiForm,
@@ -27,7 +27,11 @@ import {
 } from '../../base/index.js';
 import { webModule } from '../module.js';
 
-export const Web3Deposit = () => {
+export interface Web3TokenDepositProps {
+  onSuccess?: () => void;
+}
+
+export const Web3TokenDeposit = (props: Web3TokenDepositProps) => {
   const settingResp = useApi(settingApi.getPublic, {
     module: currencyWebModule.name,
     name: constants.WEB3_DEPOSIT_SETTING,
@@ -45,6 +49,7 @@ export const Web3Deposit = () => {
             amount: number;
           }>
         }
+        onSuccess={props.onSuccess}
         onBeforeSubmit={async (values) => {
           if (values.amount && values.amount > 0) {
             const network = await getNetwork();
@@ -104,26 +109,46 @@ export const Web3Deposit = () => {
       ></ApiForm>
     );
   }
+  return <></>;
 };
 
-export const Web3Redeposit = () => {
+export interface Web3RedepositProps {
+  onSuccess?: () => void;
+}
+
+export const Web3Redeposit = (props: Web3RedepositProps) => {
   const { t } = webModule.useTranslation();
   const tWeb3 = web3WebModule.useTranslation().t;
 
   return (
     <ApiFormGroup
       api={transactionApi.deposit}
+      onSuccess={props.onSuccess}
       fields={[
         {
           name: 'transactionHash',
           input: (
             <TextInput
-              label={t('redepositHint')}
-              placeholder={tWeb3('transactionHash')}
+              label={tWeb3('transactionHash')}
+              description={t('redepositHint')}
             ></TextInput>
           ),
         },
       ]}
     ></ApiFormGroup>
+  );
+};
+
+export type Web3DepositProps = Web3TokenDepositProps;
+
+export const Web3Deposit = (props: Web3DepositProps) => {
+  const tCore = coreWebModule.useTranslation().t;
+
+  return (
+    <>
+      <Web3TokenDeposit onSuccess={props.onSuccess}></Web3TokenDeposit>
+      <Divider size="xs" label={tCore('or')} labelPosition="center" my="md" />
+      <Web3Redeposit onSuccess={props.onSuccess}></Web3Redeposit>
+    </>
   );
 };
