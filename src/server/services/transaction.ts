@@ -103,7 +103,8 @@ export class DepositTransactionApiService extends BaseService {
               abi: erc20ABI,
               functionName: 'decimals',
             });
-            const amount = BigInt(eventData) / BigInt(10) ** BigInt(decimal);
+            const amount =
+              BigInt(eventData.value) / BigInt(10) ** BigInt(decimal);
 
             await this.createPaymentTransactionService.handle({
               account: {

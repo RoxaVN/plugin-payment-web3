@@ -1,6 +1,7 @@
 {
   "web3DepositSetting": "Cài đặt nạp tiền qua web3",
   "recipientAddress": "Địa chỉ nhận",
+  "redepositHint": "Nếu bạn đã thực hiện giao dịch chuyển token thành công trên blockchain nhưng vẫn chưa nhận được tiền trong tài khoản, thì bạn có thể gửi lại hash giao dịch để chúng tôi kiểm tra lại",
   "Meta": {
     "name": "Thanh toán web3",
     "description": "Thanh toán qua web3"

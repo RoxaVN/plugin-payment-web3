@@ -3,7 +3,6 @@ import {
   ApiSource,
   ExactProps,
   IsPositive,
-  Min,
   MinLength,
 } from '@roxavn/core/base';
 import { SettingResponse, permissions } from '@roxavn/module-utils/base';
@@ -25,7 +24,7 @@ export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3Deposi
   @MinLength(1)
   recipientAddress: `0x${string}`;
 
-  @Min(1)
+  @MinLength(1)
   currencyId: string;
 
   @IsPositive()
