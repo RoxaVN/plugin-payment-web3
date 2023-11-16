@@ -106,7 +106,7 @@ export class DepositTransactionApiService extends BaseService {
             const amount =
               BigInt(eventData.value) / BigInt(10) ** BigInt(decimal);
 
-            await this.createPaymentTransactionService.handle({
+            return this.createPaymentTransactionService.handle({
               account: {
                 userId: authUser.id,
                 amount: amount * BigInt(setting.exchangeRate),
@@ -115,8 +115,6 @@ export class DepositTransactionApiService extends BaseService {
               type: constants.PAYMENT_WEB3,
               originalTransactionId: request.transactionHash,
             });
-
-            return { id: '' };
           }
           throw new NotLinkedAddressException();
         }
