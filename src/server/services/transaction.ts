@@ -112,7 +112,7 @@ export class DepositTransactionApiService extends BaseService {
                 amount: amount * BigInt(setting.exchangeRate),
               },
               currencyId: setting.currencyId,
-              type: constants.PAYMENT_WEB3,
+              type: constants.WEB3_DEPOSIT,
               originalTransactionId: request.transactionHash,
             });
           }

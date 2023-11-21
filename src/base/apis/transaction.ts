@@ -16,7 +16,19 @@ class DepositTransactionRequest extends ExactProps<DepositTransactionRequest> {
 }
 
 export const transactionApi = {
-  deposit: transactionSource.create({
+  deposit: transactionSource.create<
+    DepositTransactionRequest,
+    {
+      accountId: string;
+      amount: string;
+      createdDate: Date;
+      currencyId: string;
+      id: string;
+      newBalance: string;
+      oldBalance: string;
+      transactionId: string;
+    }
+  >({
     path: transactionSource.apiPath() + '/deposit',
     validator: DepositTransactionRequest,
     permission: permissions.DepositTransaction,

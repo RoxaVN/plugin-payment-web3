@@ -1,5 +1,5 @@
 import { Button, NumberInput, Divider, TextInput } from '@mantine/core';
-import { Api, ValidationException } from '@roxavn/core';
+import { Api, InferApiResponse, ValidationException } from '@roxavn/core';
 import {
   ApiForm,
   useApi,
@@ -28,7 +28,7 @@ import {
 import { webModule } from '../module.js';
 
 export interface Web3TokenDepositProps {
-  onSuccess?: () => void;
+  onSuccess?: (data: InferApiResponse<typeof transactionApi.deposit>) => void;
 }
 
 export const Web3TokenDeposit = (props: Web3TokenDepositProps) => {
@@ -112,9 +112,7 @@ export const Web3TokenDeposit = (props: Web3TokenDepositProps) => {
   return <></>;
 };
 
-export interface Web3RedepositProps {
-  onSuccess?: () => void;
-}
+export type Web3RedepositProps = Web3TokenDepositProps;
 
 export const Web3Redeposit = (props: Web3RedepositProps) => {
   const { t } = webModule.useTranslation();
