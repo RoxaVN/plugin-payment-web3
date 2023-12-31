@@ -3,6 +3,7 @@ import {
   NotFoundException,
   utils,
   BadRequestException,
+  formulaUtils,
 } from '@roxavn/core/base';
 import {
   AuthUser,
@@ -26,6 +27,7 @@ import { createPublicClient, decodeEventLog, http, isAddressEqual } from 'viem';
 import { erc20ABI } from 'wagmi';
 
 import {
+  NotFoundWeb3DepositSettingException,
   UpdateWeb3DepositSettingRequest,
   constants,
   transactionApi,
@@ -57,9 +59,20 @@ export class DepositTransactionApiService extends BaseService {
       module: currencyServerModule.name,
       name: constants.WEB3_DEPOSIT_SETTING,
     })) as UpdateWeb3DepositSettingRequest;
+    const settingItem = setting.items.find(
+      (item) =>
+        item.contractAddress === request.contractAddress &&
+        item.networkId === request.networkId
+    );
+    if (!settingItem) {
+      throw new NotFoundWeb3DepositSettingException(
+        request.contractAddress,
+        request.networkId
+      );
+    }
 
     const { items } = await this.getWeb3ProvidersApiService.handle({
-      networkId: setting.networkId,
+      networkId: settingItem.networkId,
     });
     const provider = items[0];
     if (provider) {
@@ -91,7 +104,9 @@ export class DepositTransactionApiService extends BaseService {
         const eventData = event.args as any;
         if (
           event.eventName === 'Transfer' &&
-          isAddressEqual(eventData.to, setting.recipientAddress)
+          isAddressEqual(eventData.to, settingItem.recipientAddress) &&
+          transaction.to &&
+          isAddressEqual(transaction.to, settingItem.contractAddress)
         ) {
           const identity = await this.getIdentityBytypeService.handle({
             subject: eventData.from?.toLowerCase(),
@@ -99,19 +114,23 @@ export class DepositTransactionApiService extends BaseService {
           });
           if (identity && identity.userId === authUser.id) {
             const decimal = await publicClient.readContract({
-              address: setting.contractAddress,
+              address: settingItem.contractAddress,
               abi: erc20ABI,
               functionName: 'decimals',
             });
-            const amount =
-              BigInt(eventData.value) / BigInt(10) ** BigInt(decimal);
+            let amount = Number(
+              BigInt(eventData.value) / BigInt(10) ** BigInt(decimal)
+            );
+            amount = parseInt(
+              formulaUtils.getResult([amount], settingItem.formula) as any
+            );
 
             return this.createPaymentTransactionService.handle({
               account: {
                 userId: authUser.id,
-                amount: amount * BigInt(setting.exchangeRate),
+                amount: amount,
               },
-              currencyId: setting.currencyId,
+              currencyId: settingItem.currencyId,
               type: constants.WEB3_DEPOSIT,
               originalTransactionId: request.transactionHash,
             });

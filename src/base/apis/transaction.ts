@@ -11,8 +11,14 @@ const transactionSource = new ApiSource<TransactionResponse>(
 );
 
 class DepositTransactionRequest extends ExactProps<DepositTransactionRequest> {
-  @MinLength(1)
+  @MinLength(3)
   transactionHash: `0x${string}`;
+
+  @MinLength(3)
+  contractAddress: `0x${string}`;
+
+  @MinLength(1)
+  networkId: string;
 }
 
 export const transactionApi = {

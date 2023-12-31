@@ -1,9 +1,13 @@
 import {
   accessManager,
   ApiSource,
+  ArrayMinSize,
   ExactProps,
-  IsPositive,
+  IsArray,
+  IsFormula,
   MinLength,
+  TransformType,
+  ValidateNested,
 } from '@roxavn/core/base';
 import { SettingResponse, permissions } from '@roxavn/module-utils/base';
 
@@ -14,7 +18,7 @@ const settingSource = new ApiSource<SettingResponse>(
   baseModule
 );
 
-export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettingRequest> {
+class Web3DepositSettingItem {
   @MinLength(1)
   contractAddress: `0x${string}`;
 
@@ -27,8 +31,16 @@ export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3Deposi
   @MinLength(1)
   currencyId: string;
 
-  @IsPositive()
-  exchangeRate: number;
+  @IsFormula([100], 'number')
+  formula: string;
+}
+
+export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettingRequest> {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @TransformType(() => Web3DepositSettingItem)
+  items: Web3DepositSettingItem[];
 }
 
 export const settingApi = {
