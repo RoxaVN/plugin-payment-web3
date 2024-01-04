@@ -2,13 +2,16 @@ import {
   ApiSource,
   Empty,
   ExactProps,
+  IsOptional,
   Min,
   MinLength,
+  NotFoundException,
+  PaginatedCollection,
+  PaginationRequest,
 } from '@roxavn/core/base';
-import {
-  AccountTransactionResponse,
-  permissions as currencyPermissions,
-} from '@roxavn/module-currency/base';
+import { AccountTransactionResponse } from '@roxavn/module-currency/base';
+import { TaskResponse } from '@roxavn/module-project/base';
+import { permissions as paymentPermissions } from '@roxavn/plugin-payment/base';
 
 import { baseModule } from '../module.js';
 import { permissions, scopes } from '../access.js';
@@ -29,7 +32,7 @@ class DepositTransactionRequest extends ExactProps<DepositTransactionRequest> {
   networkId: string;
 }
 
-class WithdrawTransactionRequest extends ExactProps<WithdrawTransactionRequest> {
+class WithdrawOrderRequest extends ExactProps<WithdrawOrderRequest> {
   @Min(1)
   amount: number;
 
@@ -37,9 +40,15 @@ class WithdrawTransactionRequest extends ExactProps<WithdrawTransactionRequest> 
   currencyId: string;
 }
 
-class AcceptWithdrawTransactionRequest extends ExactProps<AcceptWithdrawTransactionRequest> {
+class AcceptWithdrawOrderRequest extends ExactProps<AcceptWithdrawOrderRequest> {
   @MinLength(1)
   taskId: string;
+}
+
+class GetWithdrawOrdersRequest extends PaginationRequest<GetWithdrawOrdersRequest> {
+  @MinLength(1)
+  @IsOptional()
+  userId?: string;
 }
 
 export const transactionApi = {
@@ -51,20 +60,30 @@ export const transactionApi = {
     validator: DepositTransactionRequest,
     permission: permissions.DepositTransaction,
   }),
-  withdraw: transactionSource.create<
-    WithdrawTransactionRequest,
+  createWithdrawOrder: transactionSource.create<
+    WithdrawOrderRequest,
     { id: string }
   >({
-    path: transactionSource.apiPath() + '/withdraw',
-    validator: WithdrawTransactionRequest,
+    path: transactionSource.apiPath() + '/withdraw-order',
+    validator: WithdrawOrderRequest,
     permission: permissions.WithdrawTransaction,
   }),
-  acceptWithdraw: transactionSource.create<
-    AcceptWithdrawTransactionRequest,
+  acceptWithdrawOrder: transactionSource.create<
+    AcceptWithdrawOrderRequest,
     Empty
   >({
-    path: transactionSource.apiPath() + '/accept-withdraw',
-    validator: AcceptWithdrawTransactionRequest,
-    permission: currencyPermissions.CreateTransaction,
+    path: transactionSource.apiPath() + '/accept-withdraw-order',
+    validator: AcceptWithdrawOrderRequest,
+    permission: paymentPermissions.ConfirmOrder,
+  }),
+  getWithdrawOrders: transactionSource.custom<
+    GetWithdrawOrdersRequest,
+    PaginatedCollection<TaskResponse>,
+    NotFoundException
+  >({
+    method: 'GET',
+    path: transactionSource.apiPath() + '/withdraw-orders',
+    validator: GetWithdrawOrdersRequest,
+    permission: paymentPermissions.ReadOrders,
   }),
 };

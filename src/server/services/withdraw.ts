@@ -15,6 +15,7 @@ import {
   GetTaskApiService,
   GetProjectsApiService,
   GetProjectRootTaskApiService,
+  GetSubtasksApiService,
 } from '@roxavn/module-project/server';
 import { GetSettingService } from '@roxavn/module-utils/server';
 import {
@@ -85,8 +86,8 @@ export class GetRootTaskForWithdrawService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.withdraw)
-export class WithdrawTransactionApiService extends BaseService {
+@serverModule.useApi(transactionApi.createWithdrawOrder)
+export class CreateWithdrawOrderApiService extends BaseService {
   constructor(
     @inject(GetSettingService)
     protected getSettingService: GetSettingService,
@@ -99,7 +100,7 @@ export class WithdrawTransactionApiService extends BaseService {
   }
 
   async handle(
-    request: InferApiRequest<typeof transactionApi.withdraw>,
+    request: InferApiRequest<typeof transactionApi.createWithdrawOrder>,
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     const setting = (await this.getSettingService.handle({
@@ -127,8 +128,8 @@ export class WithdrawTransactionApiService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.acceptWithdraw)
-export class AcceptWithdrawTransactionApiService extends BaseService {
+@serverModule.useApi(transactionApi.acceptWithdrawOrder)
+export class AcceptWithdrawOrderApiService extends BaseService {
   constructor(
     @inject(GetTaskApiService)
     protected getTaskApiService: GetTaskApiService,
@@ -142,7 +143,9 @@ export class AcceptWithdrawTransactionApiService extends BaseService {
     super();
   }
 
-  async handle(request: InferApiRequest<typeof transactionApi.acceptWithdraw>) {
+  async handle(
+    request: InferApiRequest<typeof transactionApi.acceptWithdrawOrder>
+  ) {
     const task = await this.getTaskApiService.handle({
       taskId: request.taskId,
     });
@@ -197,5 +200,27 @@ export class AcceptWithdrawTransactionApiService extends BaseService {
 
     await client.waitForTransactionReceipt({ hash });
     return {};
+  }
+}
+
+@serverModule.useApi(transactionApi.getWithdrawOrders)
+export class GetWithdrawOrdersApiService extends BaseService {
+  constructor(
+    @inject(GetRootTaskForWithdrawService)
+    protected getRootTaskForWithdrawService: GetRootTaskForWithdrawService,
+    @inject(GetSubtasksApiService)
+    protected getSubtasksApiService: GetSubtasksApiService
+  ) {
+    super();
+  }
+
+  async handle(
+    request: InferApiRequest<typeof transactionApi.getWithdrawOrders>
+  ) {
+    const task = await this.getRootTaskForWithdrawService.handle();
+    return this.getSubtasksApiService.handle({
+      taskId: task.id,
+      ...request,
+    });
   }
 }
