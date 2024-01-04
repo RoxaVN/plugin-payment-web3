@@ -1,6 +1,8 @@
 {
   "web3DepositSetting": "Web3 deposit setting",
+  "web3WithdrawSetting": "Web3 withdraw setting",
   "recipientAddress": "Recipient address",
+  "senderPrivateKey": "Sender's private key",
   "redepositHint": "If you have successfully transferred your tokens on the blockchain but have not yet received the funds in your account, you can resubmit the transaction hash for us to double check",
   "Error": {
     "NotFoundWeb3DepositSettingException": "Not found web3 deposit setting for contract {{ contractAddress }} of network {{ networkId }}"

@@ -26,3 +26,24 @@ export class UpdateWeb3DepositSettingApiService extends BaseService {
     });
   }
 }
+
+@serverModule.useApi(settingApi.updateWeb3WithdrawSetting)
+export class UpdateWeb3WithdrawSettingApiService extends BaseService {
+  constructor(
+    @inject(UpsertSettingService)
+    private updateSettingService: UpsertSettingService
+  ) {
+    super();
+  }
+
+  async handle(
+    request: InferApiRequest<typeof settingApi.updateWeb3WithdrawSetting>
+  ) {
+    return this.updateSettingService.handle({
+      module: currencyServerModule.name,
+      name: constants.WEB3_WITHDRAW_SETTING,
+      metadata: request,
+      type: 'public',
+    });
+  }
+}

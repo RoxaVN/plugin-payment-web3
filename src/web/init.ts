@@ -1,5 +1,5 @@
-import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
+import { webModule as web3WebModule } from '@roxavn/module-web3/web';
 
 export default function () {
-  currencyWebModule.adminPluginRegisters.push(() => import('./register'));
+  web3WebModule.adminPluginRegisters.push(() => import('./register'));
 }

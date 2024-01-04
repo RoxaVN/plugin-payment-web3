@@ -14,7 +14,7 @@ import { constants, settingApi } from '../base/index.js';
 import { webModule } from './module.js';
 
 export default function () {
-  currencyWebModule.adminSettings[constants.WEB3_DEPOSIT_SETTING] = {
+  web3WebModule.adminSettings[constants.WEB3_DEPOSIT_SETTING] = {
     title: <ModuleT module={webModule} k="web3DepositSetting" />,
     form: (
       <ApiFormGroup
@@ -39,6 +39,54 @@ export default function () {
                   <TextInput
                     label={<ModuleT module={webModule} k="recipientAddress" />}
                     name="recipientAddress"
+                  />,
+                  <TextInput
+                    label={
+                      <ModuleT module={currencyWebModule} k="currencyId" />
+                    }
+                    name="currencyId"
+                  />,
+                  <FormulaInput
+                    label={<ModuleT module={coreWebModule} k="formula" />}
+                    columns={[
+                      <ModuleT module={paymentWebModule} k="depositAmount" />,
+                    ]}
+                    name="formula"
+                  />,
+                ]}
+              ></ArrayInput>
+            ),
+          },
+        ]}
+      />
+    ),
+  };
+
+  web3WebModule.adminSettings[constants.WEB3_WITHDRAW_SETTING] = {
+    title: <ModuleT module={webModule} k="web3WithdrawSetting" />,
+    form: (
+      <ApiFormGroup
+        api={settingApi.updateWeb3WithdrawSetting}
+        fields={[
+          {
+            name: 'items',
+            input: (
+              <ArrayInput
+                layout="vertical"
+                fields={[
+                  <TextInput
+                    label={
+                      <ModuleT module={web3WebModule} k="contractAddress" />
+                    }
+                    name="contractAddress"
+                  />,
+                  <TextInput
+                    label={<ModuleT module={web3WebModule} k="networkId" />}
+                    name="networkId"
+                  />,
+                  <TextInput
+                    label={<ModuleT module={webModule} k="senderPrivateKey" />}
+                    name="senderPrivateKey"
                   />,
                   <TextInput
                     label={
