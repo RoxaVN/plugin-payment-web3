@@ -72,7 +72,7 @@ export class GetRootTaskForWithdrawService extends BaseService {
       if (!project) {
         project = await this.createProjectService.handle({
           name: 'web3 withdraw',
-          duration: 365 * 100,
+          duration: 365 * 100, // expire after 100 years
           isPublic: false,
           userId: user.id,
         });

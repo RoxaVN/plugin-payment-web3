@@ -14,7 +14,7 @@ import { constants, settingApi } from '../base/index.js';
 import { webModule } from './module.js';
 
 export default function () {
-  web3WebModule.adminSettings[constants.WEB3_DEPOSIT_SETTING] = {
+  currencyWebModule.adminSettings[constants.WEB3_DEPOSIT_SETTING] = {
     title: <ModuleT module={webModule} k="web3DepositSetting" />,
     form: (
       <ApiFormGroup
@@ -62,7 +62,7 @@ export default function () {
     ),
   };
 
-  web3WebModule.adminSettings[constants.WEB3_WITHDRAW_SETTING] = {
+  currencyWebModule.adminSettings[constants.WEB3_WITHDRAW_SETTING] = {
     title: <ModuleT module={webModule} k="web3WithdrawSetting" />,
     form: (
       <ApiFormGroup
