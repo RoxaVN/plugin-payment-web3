@@ -131,7 +131,7 @@ export class DepositTransactionApiService extends BaseService {
                 amount: amount,
               },
               currencyId: settingItem.currencyId,
-              type: constants.WEB3_DEPOSIT,
+              type: constants.Transaction.WEB3_DEPOSIT,
               originalTransactionId: request.transactionHash,
             });
           }
