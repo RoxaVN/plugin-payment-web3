@@ -1,4 +1,8 @@
-import { type InferApiRequest, constants as coreConstants } from '@roxavn/core';
+import {
+  type InferApiRequest,
+  constants as coreConstants,
+  formulaUtils,
+} from '@roxavn/core';
 import {
   AuthUser,
   BaseService,
@@ -8,13 +12,28 @@ import {
 import {
   CreateProjectService,
   CreateSubtaskService,
+  GetTaskApiService,
   GetProjectsApiService,
   GetProjectRootTaskApiService,
 } from '@roxavn/module-project/server';
 import { GetSettingService } from '@roxavn/module-utils/server';
-import { GetOrCreateUserService } from '@roxavn/module-user/server';
-import { serverModule as web3ServerModule } from '@roxavn/module-web3/server';
+import {
+  GetOrCreateUserService,
+  GetUserIdentitiesApiService,
+} from '@roxavn/module-user/server';
+import { NotFoundProviderException } from '@roxavn/module-web3/base';
+import {
+  GetWeb3ProvidersApiService,
+  serverModule as web3ServerModule,
+} from '@roxavn/module-web3/server';
+import {
+  constants as web3AuthConstants,
+  NotLinkedAddressException,
+} from '@roxavn/plugin-web3-auth/base';
 import { CreatePaymentTransactionService } from '@roxavn/plugin-payment/server';
+import { createWalletClient, http, publicActions } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { erc20ABI } from 'wagmi';
 
 import { serverModule } from '../module.js';
 import {
@@ -71,8 +90,6 @@ export class WithdrawTransactionApiService extends BaseService {
   constructor(
     @inject(GetSettingService)
     protected getSettingService: GetSettingService,
-    @inject(CreatePaymentTransactionService)
-    protected createPaymentTransactionService: CreatePaymentTransactionService,
     @inject(GetRootTaskForWithdrawService)
     protected getRootTaskForWithdrawService: GetRootTaskForWithdrawService,
     @inject(CreateSubtaskService)
@@ -97,7 +114,7 @@ export class WithdrawTransactionApiService extends BaseService {
     }
 
     const rootTask = await this.getRootTaskForWithdrawService.handle();
-    await this.createSubtaskService.handle({
+    return this.createSubtaskService.handle({
       taskId: rootTask.id,
       expiryDate: rootTask.expiryDate,
       userId: authUser.id,
@@ -107,14 +124,78 @@ export class WithdrawTransactionApiService extends BaseService {
         amount: request.amount,
       },
     });
+  }
+}
 
-    return this.createPaymentTransactionService.handle({
+@serverModule.useApi(transactionApi.acceptWithdraw)
+export class AcceptWithdrawTransactionApiService extends BaseService {
+  constructor(
+    @inject(GetTaskApiService)
+    protected getTaskApiService: GetTaskApiService,
+    @inject(CreatePaymentTransactionService)
+    protected createPaymentTransactionService: CreatePaymentTransactionService,
+    @inject(GetUserIdentitiesApiService)
+    protected getUserIdentitiesApiService: GetUserIdentitiesApiService,
+    @inject(GetWeb3ProvidersApiService)
+    protected getWeb3ProvidersApiService: GetWeb3ProvidersApiService
+  ) {
+    super();
+  }
+
+  async handle(request: InferApiRequest<typeof transactionApi.acceptWithdraw>) {
+    const task = await this.getTaskApiService.handle({
+      taskId: request.taskId,
+    });
+    await this.createPaymentTransactionService.handle({
       account: {
-        userId: authUser.id,
-        amount: request.amount,
+        userId: task.userId,
+        amount: task.metadata?.amount,
       },
-      currencyId: request.currencyId,
+      currencyId: task.metadata?.currencyId,
       type: constants.Transaction.WEB3_WITHDRAW,
     });
+
+    const providers = await this.getWeb3ProvidersApiService.handle({
+      networkId: task.metadata?.networkId,
+    });
+    if (providers.items.length < 1) {
+      throw new NotFoundProviderException(task.metadata?.networkId);
+    }
+
+    const identities = await this.getUserIdentitiesApiService.handle({
+      userId: task.userId,
+      type: web3AuthConstants.identityTypes.WEB3_ADDRESS,
+    });
+    if (identities.items.length < 1) {
+      throw new NotLinkedAddressException();
+    }
+
+    const account = privateKeyToAccount(task.metadata?.senderPrivateKey);
+    const client = createWalletClient({
+      account,
+      chain: '' as any,
+      transport: http(providers.items[0].url),
+    }).extend(publicActions);
+    const decimal = await client.readContract({
+      address: task.metadata?.contractAddress,
+      abi: erc20ABI,
+      functionName: 'decimals',
+    });
+    let amount: any = formulaUtils.getResult(
+      [task.metadata?.amount],
+      task.metadata?.formula
+    );
+    amount = BigInt(Number(amount)) * BigInt(10) ** BigInt(decimal);
+
+    const hash = await client.writeContract({
+      address: task.metadata?.contractAddress,
+      abi: erc20ABI,
+      functionName: 'transfer',
+      args: [identities.items[0].subject as any, amount],
+      chain: undefined,
+    });
+
+    await client.waitForTransactionReceipt({ hash });
+    return {};
   }
 }

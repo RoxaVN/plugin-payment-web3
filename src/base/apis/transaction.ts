@@ -1,5 +1,14 @@
-import { ApiSource, ExactProps, Min, MinLength } from '@roxavn/core/base';
-import { AccountTransactionResponse } from '@roxavn/module-currency/base';
+import {
+  ApiSource,
+  Empty,
+  ExactProps,
+  Min,
+  MinLength,
+} from '@roxavn/core/base';
+import {
+  AccountTransactionResponse,
+  permissions as currencyPermissions,
+} from '@roxavn/module-currency/base';
 
 import { baseModule } from '../module.js';
 import { permissions, scopes } from '../access.js';
@@ -28,6 +37,11 @@ class WithdrawTransactionRequest extends ExactProps<WithdrawTransactionRequest> 
   currencyId: string;
 }
 
+class AcceptWithdrawTransactionRequest extends ExactProps<AcceptWithdrawTransactionRequest> {
+  @MinLength(1)
+  taskId: string;
+}
+
 export const transactionApi = {
   deposit: transactionSource.create<
     DepositTransactionRequest,
@@ -39,10 +53,18 @@ export const transactionApi = {
   }),
   withdraw: transactionSource.create<
     WithdrawTransactionRequest,
-    AccountTransactionResponse
+    { id: string }
   >({
     path: transactionSource.apiPath() + '/withdraw',
     validator: WithdrawTransactionRequest,
     permission: permissions.WithdrawTransaction,
+  }),
+  acceptWithdraw: transactionSource.create<
+    AcceptWithdrawTransactionRequest,
+    Empty
+  >({
+    path: transactionSource.apiPath() + '/accept-withdraw',
+    validator: AcceptWithdrawTransactionRequest,
+    permission: currencyPermissions.CreateTransaction,
   }),
 };
