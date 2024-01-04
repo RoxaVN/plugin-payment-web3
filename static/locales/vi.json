@@ -5,7 +5,8 @@
   "senderPrivateKey": "Khóa riêng của người gửi",
   "redepositHint": "Nếu bạn đã thực hiện giao dịch chuyển token thành công trên blockchain nhưng vẫn chưa nhận được tiền trong tài khoản, thì bạn có thể gửi lại hash giao dịch để chúng tôi kiểm tra lại",
   "Error": {
-    "NotFoundWeb3DepositSettingException": "Không tìm thấy cài đặt nạp tiền web3 cho hợp đồng {{ ContractAddress }} của mạng {{ networkId }}"
+    "NotFoundWeb3DepositSettingException": "Không tìm thấy cài đặt nạp tiền web3 cho hợp đồng {{ ContractAddress }} của mạng {{ networkId }}",
+    "NotFoundWeb3WithdrawSettingException": "Không tìm thấy cài đặt rút tiền web3 cho tiền tệ {{ currencyId }}"
   },
   "Meta": {
     "name": "Thanh toán web3",

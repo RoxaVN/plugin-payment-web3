@@ -3,5 +3,6 @@ export const constants = {
   WEB3_WITHDRAW_SETTING: 'web3WithdrawSetting',
   Transaction: {
     WEB3_DEPOSIT: 'web3Deposit',
+    WEB3_WITHDRAW: 'web3Withdraw',
   },
 };

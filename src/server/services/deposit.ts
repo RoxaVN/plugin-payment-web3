@@ -11,12 +11,12 @@ import {
   type InferContext,
   inject,
 } from '@roxavn/core/server';
-import { serverModule as currencyServerModule } from '@roxavn/module-currency/server';
 import { GetIdentityBytypeService } from '@roxavn/module-user/server';
 import { GetSettingService } from '@roxavn/module-utils/server';
 import {
   GetWeb3ContractApiService,
   GetWeb3ProvidersApiService,
+  serverModule as web3ServerModule,
 } from '@roxavn/module-web3/server';
 import { CreatePaymentTransactionService } from '@roxavn/plugin-payment/server';
 import {
@@ -56,7 +56,7 @@ export class DepositTransactionApiService extends BaseService {
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     const setting = (await this.getSettingService.handle({
-      module: currencyServerModule.name,
+      module: web3ServerModule.name,
       name: constants.WEB3_DEPOSIT_SETTING,
     })) as UpdateWeb3DepositSettingRequest;
     const settingItem = setting.items.find(
