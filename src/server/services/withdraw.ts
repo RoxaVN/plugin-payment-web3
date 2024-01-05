@@ -221,6 +221,10 @@ export class GetWithdrawOrdersApiService extends BaseService {
     return this.getSubtasksApiService.handle({
       taskId: task.id,
       ...request,
+      metadataFilters: request.currencyId
+        ? [{ name: 'currencyId', value: request.currencyId }]
+        : undefined,
+      orderBy: [{ attribute: 'id', direction: 'DESC' }],
     });
   }
 }

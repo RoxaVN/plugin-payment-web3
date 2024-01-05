@@ -49,6 +49,10 @@ class GetWithdrawOrdersRequest extends PaginationRequest<GetWithdrawOrdersReques
   @MinLength(1)
   @IsOptional()
   userId?: string;
+
+  @MinLength(1)
+  @IsOptional()
+  currencyId?: string;
 }
 
 export const transactionApi = {
