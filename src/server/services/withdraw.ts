@@ -2,6 +2,7 @@ import {
   type InferApiRequest,
   constants as coreConstants,
   formulaUtils,
+  BadRequestException,
 } from '@roxavn/core';
 import {
   AuthUser,
@@ -9,6 +10,7 @@ import {
   inject,
   type InferContext,
 } from '@roxavn/core/server';
+import { serverModule as currencyServerModule } from '@roxavn/module-currency/server';
 import {
   CreateProjectService,
   CreateSubtaskService,
@@ -16,6 +18,7 @@ import {
   GetProjectsApiService,
   GetProjectRootTaskApiService,
   GetSubtasksApiService,
+  AssignTaskApiService,
 } from '@roxavn/module-project/server';
 import { GetSettingService } from '@roxavn/module-utils/server';
 import {
@@ -23,10 +26,7 @@ import {
   GetUserIdentitiesApiService,
 } from '@roxavn/module-user/server';
 import { NotFoundProviderException } from '@roxavn/module-web3/base';
-import {
-  GetWeb3ProvidersApiService,
-  serverModule as web3ServerModule,
-} from '@roxavn/module-web3/server';
+import { GetWeb3ProvidersApiService } from '@roxavn/module-web3/server';
 import {
   constants as web3AuthConstants,
   NotLinkedAddressException,
@@ -56,7 +56,9 @@ export class GetRootTaskForWithdrawService extends BaseService {
     @inject(CreateProjectService)
     protected createProjectService: CreateProjectService,
     @inject(GetProjectRootTaskApiService)
-    protected getProjectRootTaskApiService: GetProjectRootTaskApiService
+    protected getProjectRootTaskApiService: GetProjectRootTaskApiService,
+    @inject(AssignTaskApiService)
+    protected assignTaskApiService: AssignTaskApiService
   ) {
     super();
   }
@@ -78,9 +80,16 @@ export class GetRootTaskForWithdrawService extends BaseService {
           userId: user.id,
         });
       }
-      this.task = await this.getProjectRootTaskApiService.handle({
+      const task = await this.getProjectRootTaskApiService.handle({
         projectId: project.id,
       });
+      if (!task.assignee) {
+        await this.assignTaskApiService.handle({
+          taskId: task.id,
+          userId: user.id,
+        });
+      }
+      this.task = task;
     }
     return this.task;
   }
@@ -104,7 +113,7 @@ export class CreateWithdrawOrderApiService extends BaseService {
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     const setting = (await this.getSettingService.handle({
-      module: web3ServerModule.name,
+      module: currencyServerModule.name,
       name: constants.WEB3_WITHDRAW_SETTING,
     })) as UpdateWeb3WithdrawSettingRequest;
     const settingItem = setting.items.find(
@@ -172,6 +181,13 @@ export class AcceptWithdrawOrderApiService extends BaseService {
     if (identities.items.length < 1) {
       throw new NotLinkedAddressException();
     }
+    const amount = formulaUtils.getResult(
+      [task.metadata?.amount],
+      task.metadata?.formula
+    );
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new BadRequestException();
+    }
 
     const account = privateKeyToAccount(task.metadata?.senderPrivateKey);
     const client = createWalletClient({
@@ -184,17 +200,15 @@ export class AcceptWithdrawOrderApiService extends BaseService {
       abi: erc20ABI,
       functionName: 'decimals',
     });
-    let amount: any = formulaUtils.getResult(
-      [task.metadata?.amount],
-      task.metadata?.formula
-    );
-    amount = BigInt(Number(amount)) * BigInt(10) ** BigInt(decimal);
+
+    const tokenAmount =
+      BigInt(parseInt(amount as any)) * BigInt(10) ** BigInt(decimal);
 
     const hash = await client.writeContract({
       address: task.metadata?.contractAddress,
       abi: erc20ABI,
       functionName: 'transfer',
-      args: [identities.items[0].subject as any, amount],
+      args: [identities.items[0].subject as any, tokenAmount],
       chain: undefined,
     });
 

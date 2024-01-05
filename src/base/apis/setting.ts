@@ -64,7 +64,7 @@ export class UpdateWeb3WithdrawSettingRequest extends ExactProps<UpdateWeb3Withd
   @IsArray()
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
-  @TransformType(() => Web3DepositSettingItem)
+  @TransformType(() => Web3WithdrawSettingItem)
   items: Web3WithdrawSettingItem[];
 }
 

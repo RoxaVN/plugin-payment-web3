@@ -97,7 +97,7 @@ export default function () {
                   <FormulaInput
                     label={<ModuleT module={coreWebModule} k="formula" />}
                     columns={[
-                      <ModuleT module={paymentWebModule} k="depositAmount" />,
+                      <ModuleT module={paymentWebModule} k="withdrawAmount" />,
                     ]}
                     name="formula"
                   />,
