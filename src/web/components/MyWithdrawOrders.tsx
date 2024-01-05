@@ -1,3 +1,4 @@
+import { Button, Tooltip } from '@mantine/core';
 import {
   ApiTable,
   useAuthUser,
@@ -14,9 +15,8 @@ import {
 } from '@roxavn/module-project/base';
 
 import { transactionApi } from '../../base/index.js';
-import { Button, Tooltip } from '@mantine/core';
 
-export function MyWithdrawOrder(props: { currencyId: string }) {
+export function MyWithdrawOrders(props: { currencyId: string }) {
   const user = useAuthUser();
   const tCore = coreWebModule.useTranslation().t;
   const tCurrency = currencyWebModule.useTranslation().t;
