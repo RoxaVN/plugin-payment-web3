@@ -10,7 +10,6 @@ import {
   inject,
   type InferContext,
 } from '@roxavn/core/server';
-import { serverModule as currencyServerModule } from '@roxavn/module-currency/server';
 import {
   CreateProjectService,
   CreateSubtaskService,
@@ -20,7 +19,6 @@ import {
   GetSubtasksApiService,
   AssignTaskApiService,
 } from '@roxavn/module-project/server';
-import { GetSettingService } from '@roxavn/module-utils/server';
 import {
   GetOrCreateUserService,
   GetUserIdentitiesApiService,
@@ -37,12 +35,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { erc20ABI } from 'wagmi';
 
 import { serverModule } from '../module.js';
-import {
-  NotFoundWeb3WithdrawSettingException,
-  UpdateWeb3WithdrawSettingRequest,
-  constants,
-  transactionApi,
-} from '../../base/index.js';
+import { constants, transactionApi } from '../../base/index.js';
+import { GetWeb3WithdrawSettingApiService } from './setting.js';
 
 @serverModule.injectable()
 export class GetRootTaskForWithdrawService extends BaseService {
@@ -98,8 +92,8 @@ export class GetRootTaskForWithdrawService extends BaseService {
 @serverModule.useApi(transactionApi.createWithdrawOrder)
 export class CreateWithdrawOrderApiService extends BaseService {
   constructor(
-    @inject(GetSettingService)
-    protected getSettingService: GetSettingService,
+    @inject(GetWeb3WithdrawSettingApiService)
+    protected getWeb3WithdrawSettingApiService: GetWeb3WithdrawSettingApiService,
     @inject(GetRootTaskForWithdrawService)
     protected getRootTaskForWithdrawService: GetRootTaskForWithdrawService,
     @inject(CreateSubtaskService)
@@ -112,16 +106,10 @@ export class CreateWithdrawOrderApiService extends BaseService {
     request: InferApiRequest<typeof transactionApi.createWithdrawOrder>,
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
-    const setting = (await this.getSettingService.handle({
-      module: currencyServerModule.name,
-      name: constants.WEB3_WITHDRAW_SETTING,
-    })) as UpdateWeb3WithdrawSettingRequest;
-    const settingItem = setting.items.find(
-      (item) => item.currencyId === request.currencyId
-    );
-    if (!settingItem) {
-      throw new NotFoundWeb3WithdrawSettingException(request.currencyId);
-    }
+    // make sure currency is allowed to be withdrawn
+    await this.getWeb3WithdrawSettingApiService.get({
+      currencyId: request.currencyId,
+    });
 
     const rootTask = await this.getRootTaskForWithdrawService.handle();
     return this.createSubtaskService.handle({
@@ -130,7 +118,7 @@ export class CreateWithdrawOrderApiService extends BaseService {
       userId: authUser.id,
       title: `Withdraw ${request.amount}`,
       metadata: {
-        ...settingItem,
+        currencyId: request.currencyId,
         amount: request.amount,
       },
     });
@@ -146,6 +134,8 @@ export class AcceptWithdrawOrderApiService extends BaseService {
     protected createPaymentTransactionService: CreatePaymentTransactionService,
     @inject(GetUserIdentitiesApiService)
     protected getUserIdentitiesApiService: GetUserIdentitiesApiService,
+    @inject(GetWeb3WithdrawSettingApiService)
+    protected getWeb3WithdrawSettingApiService: GetWeb3WithdrawSettingApiService,
     @inject(GetWeb3ProvidersApiService)
     protected getWeb3ProvidersApiService: GetWeb3ProvidersApiService
   ) {
@@ -158,6 +148,9 @@ export class AcceptWithdrawOrderApiService extends BaseService {
     const task = await this.getTaskApiService.handle({
       taskId: request.taskId,
     });
+    const setting = await this.getWeb3WithdrawSettingApiService.get({
+      currencyId: task.metadata?.currencyId,
+    });
     await this.createPaymentTransactionService.handle({
       account: {
         userId: task.userId,
@@ -168,10 +161,10 @@ export class AcceptWithdrawOrderApiService extends BaseService {
     });
 
     const providers = await this.getWeb3ProvidersApiService.handle({
-      networkId: task.metadata?.networkId,
+      networkId: setting.networkId,
     });
     if (providers.items.length < 1) {
-      throw new NotFoundProviderException(task.metadata?.networkId);
+      throw new NotFoundProviderException(setting.networkId);
     }
 
     const identities = await this.getUserIdentitiesApiService.handle({
@@ -183,20 +176,20 @@ export class AcceptWithdrawOrderApiService extends BaseService {
     }
     const amount = formulaUtils.getResult(
       [task.metadata?.amount],
-      task.metadata?.formula
+      setting.formula
     );
     if (typeof amount !== 'number' || amount <= 0) {
       throw new BadRequestException();
     }
 
-    const account = privateKeyToAccount(task.metadata?.senderPrivateKey);
+    const account = privateKeyToAccount(setting.senderPrivateKey);
     const client = createWalletClient({
       account,
       chain: '' as any,
       transport: http(providers.items[0].url),
     }).extend(publicActions);
     const decimal = await client.readContract({
-      address: task.metadata?.contractAddress,
+      address: setting.contractAddress,
       abi: erc20ABI,
       functionName: 'decimals',
     });
@@ -205,7 +198,7 @@ export class AcceptWithdrawOrderApiService extends BaseService {
       BigInt(parseInt(amount as any)) * BigInt(10) ** BigInt(decimal);
 
     const hash = await client.writeContract({
-      address: task.metadata?.contractAddress,
+      address: setting.contractAddress,
       abi: erc20ABI,
       functionName: 'transfer',
       args: [identities.items[0].subject as any, tokenAmount],

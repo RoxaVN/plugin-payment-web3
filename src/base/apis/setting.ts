@@ -6,6 +6,7 @@ import {
   IsArray,
   IsFormula,
   MinLength,
+  NotFoundException,
   TransformType,
   ValidateNested,
 } from '@roxavn/core/base';
@@ -68,6 +69,11 @@ export class UpdateWeb3WithdrawSettingRequest extends ExactProps<UpdateWeb3Withd
   items: Web3WithdrawSettingItem[];
 }
 
+export class GetWeb3WithdrawSettingRequest extends ExactProps<GetWeb3WithdrawSettingRequest> {
+  @MinLength(1)
+  currencyId: string;
+}
+
 export const settingApi = {
   updateWeb3DepositSetting: settingSource.custom({
     method: 'POST',
@@ -80,5 +86,14 @@ export const settingApi = {
     path: settingSource.apiPath() + '/web3-withdraw',
     validator: UpdateWeb3WithdrawSettingRequest,
     permission: permissions.UpdateSetting,
+  }),
+  getWeb3WithdrawSetting: settingSource.custom<
+    GetWeb3WithdrawSettingRequest,
+    Omit<Web3WithdrawSettingItem, 'senderPrivateKey'>,
+    NotFoundException
+  >({
+    method: 'GET',
+    path: settingSource.apiPath() + '/web3-withdraw',
+    validator: GetWeb3WithdrawSettingRequest,
   }),
 };

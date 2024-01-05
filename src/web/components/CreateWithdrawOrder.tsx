@@ -6,16 +6,12 @@ import {
   useApi,
   webModule as coreWebModule,
 } from '@roxavn/core/web';
-import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as paymentWebModule } from '@roxavn/plugin-payment/web';
-import { settingApi } from '@roxavn/module-utils/base';
 import { IconAlertCircle, IconCoin } from '@tabler/icons-react';
-import { useMemo } from 'react';
 
 import {
   NotFoundWeb3WithdrawSettingException,
-  UpdateWeb3WithdrawSettingRequest,
-  constants,
+  settingApi,
   transactionApi,
 } from '../../base/index.js';
 
@@ -27,24 +23,15 @@ export function CreateWithdrawOrder(props: {
 }) {
   const tPayment = paymentWebModule.useTranslation().t;
   const tCore = coreWebModule.useTranslation().t;
-  const settingResp = useApi(settingApi.getPublic, {
-    module: currencyWebModule.name,
-    name: constants.WEB3_DEPOSIT_SETTING,
+  const { data, loading } = useApi(settingApi.getWeb3WithdrawSetting, {
+    currencyId: props.currencyId,
   });
-  const settingItem = useMemo(() => {
-    return (
-      settingResp.data &&
-      (settingResp.data as UpdateWeb3WithdrawSettingRequest).items.find(
-        (item) => item.currencyId === props.currencyId
-      )
-    );
-  }, [settingResp]);
 
-  return settingResp.loading ? (
+  return loading ? (
     <Group position="center">
       <Loader />
     </Group>
-  ) : settingItem ? (
+  ) : data ? (
     <ApiForm
       api={transactionApi.createWithdrawOrder}
       apiParams={{ currencyId: props.currencyId }}
@@ -64,7 +51,7 @@ export function CreateWithdrawOrder(props: {
                 ? parseInt(
                     formulaUtils.getResult(
                       [form.values.amount],
-                      settingItem.formula
+                      data.formula
                     ) as any
                   )
                 : 0
