@@ -6,6 +6,7 @@ import {
   utils,
   ModalTrigger,
   ApiConfirmFormGroup,
+  ApiFetcherRef,
 } from '@roxavn/core/web';
 import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as projectWebModule } from '@roxavn/module-project/web';
@@ -15,15 +16,22 @@ import {
 } from '@roxavn/module-project/base';
 
 import { transactionApi } from '../../base/index.js';
+import { useRef } from 'react';
+import { InferApiRequest } from '@roxavn/core';
 
 export function MyWithdrawOrders(props: { currencyId: string }) {
   const user = useAuthUser();
+  const fetcherRef =
+    useRef<
+      ApiFetcherRef<InferApiRequest<typeof transactionApi.getWithdrawOrders>>
+    >();
   const tCore = coreWebModule.useTranslation().t;
   const tCurrency = currencyWebModule.useTranslation().t;
   const tProject = projectWebModule.useTranslation().t;
 
   return (
     <ApiTable
+      fetcherRef={fetcherRef}
       api={transactionApi.getWithdrawOrders}
       apiParams={{
         userId: user?.id,
@@ -50,19 +58,19 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
               case projectConstants.TaskStatus.CANCELED:
                 return (
                   <Tooltip label={tProject('canceledDate')}>
-                    {utils.Render.datetime(item.canceledDate)}
+                    <span>{utils.Render.datetime(item.canceledDate)}</span>
                   </Tooltip>
                 );
               case projectConstants.TaskStatus.FINISHED:
                 return (
                   <Tooltip label={tProject('finishedDate')}>
-                    {utils.Render.datetime(item.finishedDate)}
+                    <span>{utils.Render.datetime(item.finishedDate)}</span>
                   </Tooltip>
                 );
               case projectConstants.TaskStatus.REJECTED:
                 return (
                   <Tooltip label={tProject('rejectedDate')}>
-                    {utils.Render.datetime(item.rejectedDate)}
+                    <span>{utils.Render.datetime(item.rejectedDate)}</span>
                   </Tooltip>
                 );
               case projectConstants.TaskStatus.PENDING:
@@ -73,7 +81,12 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
                       <ApiConfirmFormGroup
                         api={taskApi.cancel}
                         onCancel={() => setOpened(false)}
-                        onSuccess={() => setOpened(false)}
+                        onSuccess={() => {
+                          setOpened(false);
+                          fetcherRef.current?.fetch(
+                            fetcherRef.current.currentParams
+                          );
+                        }}
                         apiParams={{ taskId: item.id }}
                       />
                     )}
@@ -81,6 +94,8 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
                     <Button>{tCore('cancel')}</Button>
                   </ModalTrigger>
                 );
+              default:
+                return <></>;
             }
           },
         },

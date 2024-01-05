@@ -1,4 +1,12 @@
-import { Button, NumberInput, Divider, TextInput, Alert } from '@mantine/core';
+import {
+  Button,
+  NumberInput,
+  Divider,
+  TextInput,
+  Alert,
+  Loader,
+  Group,
+} from '@mantine/core';
 import {
   Api,
   InferApiResponse,
@@ -58,87 +66,88 @@ export const Web3TokenDeposit = (props: Web3TokenDepositProps) => {
   }, [settingResp]);
   const tPayment = paymentWebModule.useTranslation().t;
 
-  if (settingItem) {
-    return (
-      <ApiForm
-        api={
-          transactionApi.deposit as Api<{
-            transactionHash: string;
-            contractAddress: string;
-            networkId: string;
-            amount: number;
-          }>
-        }
-        onSuccess={props.onSuccess}
-        onBeforeSubmit={async (values) => {
-          if (values.amount && values.amount > 0) {
-            const network = await getNetwork();
-            if (network.chain?.id !== parseInt(props.networkId)) {
-              await switchNetwork({ chainId: parseInt(props.networkId) });
-            }
-            const decimals = await readContract({
-              address: props.contractAddress,
-              abi: erc20ABI,
-              functionName: 'decimals',
-            });
-            const { hash } = await writeContract({
-              address: props.contractAddress,
-              abi: erc20ABI,
-              functionName: 'transfer',
-              args: [
-                settingItem.recipientAddress,
-                BigInt(values.amount) * BigInt(10) ** BigInt(decimals as any),
-              ] as [`0x${string}`, bigint],
-            });
-            await waitForTransaction({ hash });
-            return {
-              transactionHash: hash,
-              contractAddress: props.contractAddress,
-              networkId: props.networkId,
-            };
+  return settingResp.loading ? (
+    <Group position="center">
+      <Loader />
+    </Group>
+  ) : settingItem ? (
+    <ApiForm
+      api={
+        transactionApi.deposit as Api<{
+          transactionHash: string;
+          contractAddress: string;
+          networkId: string;
+          amount: number;
+        }>
+      }
+      onSuccess={props.onSuccess}
+      onBeforeSubmit={async (values) => {
+        if (values.amount && values.amount > 0) {
+          const network = await getNetwork();
+          if (network.chain?.id !== parseInt(props.networkId)) {
+            await switchNetwork({ chainId: parseInt(props.networkId) });
           }
-          throw new ValidationException({
-            amount: {
-              key: 'Validation.IsPositive',
-              ns: coreWebModule.escapedName,
-            },
+          const decimals = await readContract({
+            address: props.contractAddress,
+            abi: erc20ABI,
+            functionName: 'decimals',
           });
-        }}
-        formRender={(form) => (
-          <>
-            <NumberInput
-              label={tPayment('depositAmount')}
-              {...form.getInputProps('amount')}
-            />
-            <NumberInput
-              mt="md"
-              readOnly
-              label={tPayment('receivedAmount')}
-              value={
-                form.values.amount
-                  ? parseInt(
-                      formulaUtils.getResult(
-                        [form.values.amount],
-                        settingItem.formula
-                      ) as any
-                    )
-                  : 0
-              }
-            />
-            <Button
-              mt="md"
-              leftIcon={<IconCoin size="1rem" />}
-              type="submit"
-              fullWidth
-            >
-              {tPayment('deposit')}
-            </Button>
-          </>
-        )}
-      ></ApiForm>
-    );
-  }
-  return (
+          const { hash } = await writeContract({
+            address: props.contractAddress,
+            abi: erc20ABI,
+            functionName: 'transfer',
+            args: [
+              settingItem.recipientAddress,
+              BigInt(values.amount) * BigInt(10) ** BigInt(decimals as any),
+            ] as [`0x${string}`, bigint],
+          });
+          await waitForTransaction({ hash });
+          return {
+            transactionHash: hash,
+            contractAddress: props.contractAddress,
+            networkId: props.networkId,
+          };
+        }
+        throw new ValidationException({
+          amount: {
+            key: 'Validation.IsPositive',
+            ns: coreWebModule.escapedName,
+          },
+        });
+      }}
+      formRender={(form) => (
+        <>
+          <NumberInput
+            label={tPayment('depositAmount')}
+            {...form.getInputProps('amount')}
+          />
+          <NumberInput
+            mt="md"
+            readOnly
+            label={tPayment('receivedAmount')}
+            value={
+              form.values.amount
+                ? parseInt(
+                    formulaUtils.getResult(
+                      [form.values.amount],
+                      settingItem.formula
+                    ) as any
+                  )
+                : 0
+            }
+          />
+          <Button
+            mt="md"
+            leftIcon={<IconCoin size="1rem" />}
+            type="submit"
+            fullWidth
+          >
+            {tPayment('deposit')}
+          </Button>
+        </>
+      )}
+    ></ApiForm>
+  ) : (
     <Alert color="red" icon={<IconAlertCircle size="1rem" />}>
       <ApiError
         error={

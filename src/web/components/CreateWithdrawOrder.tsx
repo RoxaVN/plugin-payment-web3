@@ -1,6 +1,11 @@
-import { Alert, Button, NumberInput } from '@mantine/core';
+import { Alert, Button, Group, Loader, NumberInput } from '@mantine/core';
 import { InferApiResponse, formulaUtils } from '@roxavn/core';
-import { ApiError, ApiForm, useApi } from '@roxavn/core/web';
+import {
+  ApiError,
+  ApiForm,
+  useApi,
+  webModule as coreWebModule,
+} from '@roxavn/core/web';
 import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as paymentWebModule } from '@roxavn/plugin-payment/web';
 import { settingApi } from '@roxavn/module-utils/base';
@@ -21,6 +26,7 @@ export function CreateWithdrawOrder(props: {
   ) => void;
 }) {
   const tPayment = paymentWebModule.useTranslation().t;
+  const tCore = coreWebModule.useTranslation().t;
   const settingResp = useApi(settingApi.getPublic, {
     module: currencyWebModule.name,
     name: constants.WEB3_DEPOSIT_SETTING,
@@ -34,7 +40,11 @@ export function CreateWithdrawOrder(props: {
     );
   }, [settingResp]);
 
-  return settingItem ? (
+  return settingResp.loading ? (
+    <Group position="center">
+      <Loader />
+    </Group>
+  ) : settingItem ? (
     <ApiForm
       api={transactionApi.createWithdrawOrder}
       apiParams={{ currencyId: props.currencyId }}
@@ -66,7 +76,7 @@ export function CreateWithdrawOrder(props: {
             type="submit"
             fullWidth
           >
-            {tPayment('withdraw')}
+            {tCore('create')}
           </Button>
         </>
       )}
