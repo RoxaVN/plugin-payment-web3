@@ -72,6 +72,7 @@ export class GetRootTaskForWithdrawService extends BaseService {
           duration: 365 * 100, // expire after 100 years
           isPublic: false,
           userId: user.id,
+          type: constants.Transaction.WEB3_WITHDRAW,
         });
       }
       const task = await this.getProjectRootTaskApiService.handle({
