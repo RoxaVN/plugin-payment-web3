@@ -1,6 +1,7 @@
 {
   "web3DepositSetting": "Cài đặt nạp tiền qua web3",
   "web3WithdrawSetting": "Cài đặt rút tiền qua web3",
+  "withdrawToken": "Rút tiền số",
   "recipientAddress": "Địa chỉ nhận",
   "senderPrivateKey": "Khóa riêng của người gửi",
   "redepositHint": "Nếu bạn đã thực hiện giao dịch chuyển token thành công trên blockchain nhưng vẫn chưa nhận được tiền trong tài khoản, thì bạn có thể gửi lại hash giao dịch để chúng tôi kiểm tra lại",

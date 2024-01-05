@@ -3,15 +3,18 @@ import {
   ApiFormGroup,
   ArrayInput,
   FormulaInput,
+  IfCanAccessApi,
   ModuleT,
   webModule as coreWebModule,
 } from '@roxavn/core/web';
 import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as web3WebModule } from '@roxavn/module-web3/web';
 import { webModule as paymentWebModule } from '@roxavn/plugin-payment/web';
+import { IconCurrencyEthereum } from '@tabler/icons-react';
 
-import { constants, settingApi } from '../base/index.js';
+import { constants, settingApi, transactionApi } from '../base/index.js';
 import { webModule } from './module.js';
+import { AdminWithdrawOrders } from './components/index.js';
 
 export default function () {
   currencyWebModule.adminSettings[constants.WEB3_DEPOSIT_SETTING] = {
@@ -109,4 +112,15 @@ export default function () {
       />
     ),
   };
+
+  currencyWebModule.adminPages.push({
+    path: 'withdraw-token',
+    icon: IconCurrencyEthereum,
+    label: <ModuleT module={webModule} k="withdrawToken" />,
+    element: (
+      <IfCanAccessApi api={transactionApi.getWithdrawOrders}>
+        <AdminWithdrawOrders />
+      </IfCanAccessApi>
+    ),
+  });
 }
