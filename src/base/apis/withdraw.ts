@@ -6,17 +6,14 @@ import {
   MinLength,
   PaginationRequest,
 } from '@roxavn/core/base';
-import {
-  TaskResponse,
-  scopes as projectScopes,
-} from '@roxavn/module-project/base';
+import { TaskResponse } from '@roxavn/module-project/base';
 import { permissions as paymentPermissions } from '@roxavn/plugin-payment/base';
 
 import { baseModule } from '../module.js';
-import { permissions } from '../access.js';
+import { permissions, scopes } from '../access.js';
 
 const withdrawSource = new ApiSource<TaskResponse>(
-  [projectScopes.Task],
+  [scopes.Withdraw],
   baseModule
 );
 
@@ -34,6 +31,7 @@ class AcceptWithdrawOrderRequest extends ExactProps<AcceptWithdrawOrderRequest> 
 }
 
 const RejectWithdrawOrderRequest = AcceptWithdrawOrderRequest;
+const CancelWithdrawOrderRequest = AcceptWithdrawOrderRequest;
 
 class GetWithdrawOrdersRequest extends PaginationRequest<GetWithdrawOrdersRequest> {
   @MinLength(1)
@@ -49,6 +47,11 @@ export const withdrawApi = {
   create: withdrawSource.create({
     validator: CreateWithdrawOrderRequest,
     permission: permissions.CreateWithdrawOrder,
+  }),
+  cancel: withdrawSource.update({
+    path: withdrawSource.apiPath() + '/cancel',
+    validator: CancelWithdrawOrderRequest,
+    permission: permissions.CancelWithdrawOrder,
   }),
   accept: withdrawSource.update({
     path: withdrawSource.apiPath({ includeId: true }) + '/accept',

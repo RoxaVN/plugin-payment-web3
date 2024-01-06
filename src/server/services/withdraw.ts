@@ -19,6 +19,7 @@ import {
   GetSubtasksApiService,
   AssignTaskService,
   RejectTaskApiService,
+  CancelTaskApiService,
   FinishTaskApiService,
   UpdateTaskMetadataService,
 } from '@roxavn/module-project/server';
@@ -146,6 +147,41 @@ export class CreateWithdrawOrderApiService extends BaseService {
         cancelDate: dayjs().add(setting.waitingTimeToCancel, 'day').toDate(),
       },
     });
+  }
+}
+
+@serverModule.useApi(withdrawApi.cancel)
+export class CancelWithdrawOrderApiService extends BaseService {
+  constructor(
+    @inject(GetTaskApiService)
+    protected getTaskApiService: GetTaskApiService,
+    @inject(CancelTaskApiService)
+    protected cancelTaskApiService: CancelTaskApiService,
+    @inject(CreatePaymentTransactionService)
+    protected createPaymentTransactionService: CreatePaymentTransactionService
+  ) {
+    super();
+  }
+
+  async handle(request: InferApiRequest<typeof withdrawApi.reject>) {
+    const task = await this.getTaskApiService.handle({
+      taskId: request.taskId,
+    });
+    if (dayjs().isBefore(task.metadata?.cancelDate)) {
+      throw new BadRequestException();
+    }
+    await this.cancelTaskApiService.handle({
+      taskId: request.taskId,
+    });
+    await this.createPaymentTransactionService.handle({
+      account: {
+        userId: task.userId,
+        amount: task.metadata?.amount,
+      },
+      currencyId: task.metadata?.currencyId,
+      type: constants.Transaction.WEB3_WITHDRAW,
+    });
+    return {};
   }
 }
 
