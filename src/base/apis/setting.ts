@@ -6,6 +6,7 @@ import {
   IsArray,
   IsEthereumAddress,
   IsFormula,
+  IsPositive,
   MinLength,
   NotFoundException,
   TransformType,
@@ -53,6 +54,9 @@ class Web3WithdrawSettingItem {
 
   @IsFormula([100], 'number')
   formula: string;
+
+  @IsPositive()
+  waitingTimeToCancel: number;
 }
 
 export class UpdateWeb3DepositSettingRequest extends ExactProps<UpdateWeb3DepositSettingRequest> {

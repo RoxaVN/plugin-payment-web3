@@ -1,4 +1,4 @@
-import { TextInput } from '@mantine/core';
+import { NumberInput, TextInput } from '@mantine/core';
 import {
   ApiFormGroup,
   ArrayInput,
@@ -96,6 +96,12 @@ export default function () {
                       <ModuleT module={currencyWebModule} k="currencyId" />
                     }
                     name="currencyId"
+                  />,
+                  <NumberInput
+                    label={
+                      <ModuleT module={webModule} k="waitingTimeToCancel" />
+                    }
+                    name="waitingTimeToCancel"
                   />,
                   <FormulaInput
                     label={<ModuleT module={coreWebModule} k="formula" />}

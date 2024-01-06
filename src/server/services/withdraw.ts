@@ -36,6 +36,7 @@ import {
   NotLinkedAddressException,
 } from '@roxavn/plugin-web3-auth/base';
 import { CreatePaymentTransactionService } from '@roxavn/plugin-payment/server';
+import dayjs from 'dayjs';
 import { createWalletClient, http, publicActions } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { erc20ABI } from 'wagmi';
@@ -142,6 +143,7 @@ export class CreateWithdrawOrderApiService extends BaseService {
       metadata: {
         currencyId: request.currencyId,
         amount: request.amount,
+        cancelDate: dayjs().add(setting.waitingTimeToCancel, 'day').toDate(),
       },
     });
   }
