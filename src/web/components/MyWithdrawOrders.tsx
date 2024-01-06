@@ -16,7 +16,7 @@ import {
   taskApi,
 } from '@roxavn/module-project/base';
 
-import { transactionApi } from '../../base/index.js';
+import { withdrawApi } from '../../base/index.js';
 import { useRef } from 'react';
 import { InferApiRequest } from '@roxavn/core';
 
@@ -49,9 +49,7 @@ export function TaskStatus({ task }: { task: TaskResponse }) {
 export function MyWithdrawOrders(props: { currencyId: string }) {
   const user = useAuthUser();
   const fetcherRef =
-    useRef<
-      ApiFetcherRef<InferApiRequest<typeof transactionApi.getWithdrawOrders>>
-    >();
+    useRef<ApiFetcherRef<InferApiRequest<typeof withdrawApi.getMany>>>();
   const tCore = coreWebModule.useTranslation().t;
   const tCurrency = currencyWebModule.useTranslation().t;
   const tProject = projectWebModule.useTranslation().t;
@@ -59,7 +57,7 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
   return (
     <ApiTable
       fetcherRef={fetcherRef}
-      api={transactionApi.getWithdrawOrders}
+      api={withdrawApi.getMany}
       apiParams={{
         userId: user?.id,
         currencyId: props.currencyId,

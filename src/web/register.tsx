@@ -12,7 +12,7 @@ import { webModule as web3WebModule } from '@roxavn/module-web3/web';
 import { webModule as paymentWebModule } from '@roxavn/plugin-payment/web';
 import { IconCurrencyEthereum } from '@tabler/icons-react';
 
-import { constants, settingApi, transactionApi } from '../base/index.js';
+import { constants, settingApi, withdrawApi } from '../base/index.js';
 import { webModule } from './module.js';
 import { AdminWithdrawOrders } from './components/index.js';
 
@@ -124,7 +124,7 @@ export default function () {
     icon: IconCurrencyEthereum,
     label: <ModuleT module={webModule} k="withdrawToken" />,
     element: (
-      <IfCanAccessApi api={transactionApi.getWithdrawOrders}>
+      <IfCanAccessApi api={withdrawApi.getMany}>
         <AdminWithdrawOrders />
       </IfCanAccessApi>
     ),

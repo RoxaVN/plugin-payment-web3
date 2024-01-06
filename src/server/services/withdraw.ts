@@ -42,7 +42,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { erc20ABI } from 'wagmi';
 
 import { serverModule } from '../module.js';
-import { constants, transactionApi } from '../../base/index.js';
+import { constants, withdrawApi } from '../../base/index.js';
 import { GetWeb3WithdrawSettingApiService } from './setting.js';
 
 @serverModule.injectable()
@@ -97,7 +97,7 @@ export class GetRootTaskForWithdrawService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.createWithdrawOrder)
+@serverModule.useApi(withdrawApi.create)
 export class CreateWithdrawOrderApiService extends BaseService {
   constructor(
     @inject(GetWeb3WithdrawSettingApiService)
@@ -113,7 +113,7 @@ export class CreateWithdrawOrderApiService extends BaseService {
   }
 
   async handle(
-    request: InferApiRequest<typeof transactionApi.createWithdrawOrder>,
+    request: InferApiRequest<typeof withdrawApi.create>,
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     // make sure currency is allowed to be withdrawn
@@ -149,7 +149,7 @@ export class CreateWithdrawOrderApiService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.rejectWithdrawOrder)
+@serverModule.useApi(withdrawApi.reject)
 export class RejectWithdrawOrderApiService extends BaseService {
   constructor(
     @inject(GetTaskApiService)
@@ -165,7 +165,7 @@ export class RejectWithdrawOrderApiService extends BaseService {
   }
 
   async handle(
-    request: InferApiRequest<typeof transactionApi.rejectWithdrawOrder>,
+    request: InferApiRequest<typeof withdrawApi.reject>,
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     await this.rejectTaskApiService.handle({
@@ -190,7 +190,7 @@ export class RejectWithdrawOrderApiService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.acceptWithdrawOrder)
+@serverModule.useApi(withdrawApi.accept)
 export class AcceptWithdrawOrderApiService extends BaseService {
   constructor(
     @inject(GetTaskApiService)
@@ -212,7 +212,7 @@ export class AcceptWithdrawOrderApiService extends BaseService {
   }
 
   async handle(
-    request: InferApiRequest<typeof transactionApi.acceptWithdrawOrder>,
+    request: InferApiRequest<typeof withdrawApi.accept>,
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     await this.assignTaskService.handle({
@@ -286,7 +286,7 @@ export class AcceptWithdrawOrderApiService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.getWithdrawOrders)
+@serverModule.useApi(withdrawApi.getMany)
 export class GetWithdrawOrdersApiService extends BaseService {
   constructor(
     @inject(GetRootTaskForWithdrawService)
@@ -297,9 +297,7 @@ export class GetWithdrawOrdersApiService extends BaseService {
     super();
   }
 
-  async handle(
-    request: InferApiRequest<typeof transactionApi.getWithdrawOrders>
-  ) {
+  async handle(request: InferApiRequest<typeof withdrawApi.getMany>) {
     const task = await this.getRootTaskForWithdrawService.handle();
     return this.getSubtasksApiService.handle({
       taskId: task.id,

@@ -12,14 +12,12 @@ import { IconAlertCircle, IconCoin } from '@tabler/icons-react';
 import {
   NotFoundWeb3WithdrawSettingException,
   settingApi,
-  transactionApi,
+  withdrawApi,
 } from '../../base/index.js';
 
 export function CreateWithdrawOrder(props: {
   currencyId: string;
-  onSuccess?: (
-    data: InferApiResponse<typeof transactionApi.createWithdrawOrder>
-  ) => void;
+  onSuccess?: (data: InferApiResponse<typeof withdrawApi.create>) => void;
 }) {
   const tPayment = paymentWebModule.useTranslation().t;
   const tCore = coreWebModule.useTranslation().t;
@@ -33,7 +31,7 @@ export function CreateWithdrawOrder(props: {
     </Group>
   ) : data ? (
     <ApiForm
-      api={transactionApi.createWithdrawOrder}
+      api={withdrawApi.create}
       apiParams={{ currencyId: props.currencyId }}
       onSuccess={props.onSuccess}
       formRender={(form) => (

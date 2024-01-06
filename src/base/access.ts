@@ -3,7 +3,7 @@ import { accessManager } from '@roxavn/core/base';
 import { baseModule } from './module.js';
 
 export const scopes = accessManager.makeScopes(baseModule, {
-  Transaction: { name: 'transaction' },
+  Deposit: { name: 'deposit' },
 });
 
 export const permissions = accessManager.makePermissions(scopes, {

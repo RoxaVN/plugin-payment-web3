@@ -30,11 +30,11 @@ import {
   NotFoundWeb3DepositSettingException,
   UpdateWeb3DepositSettingRequest,
   constants,
-  transactionApi,
+  depositApi,
 } from '../../base/index.js';
 import { serverModule } from '../module.js';
 
-@serverModule.useApi(transactionApi.deposit)
+@serverModule.useApi(depositApi.create)
 export class DepositTransactionApiService extends BaseService {
   constructor(
     @inject(GetSettingService)
@@ -52,7 +52,7 @@ export class DepositTransactionApiService extends BaseService {
   }
 
   async handle(
-    request: InferApiRequest<typeof transactionApi.deposit>,
+    request: InferApiRequest<typeof depositApi.create>,
     @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
     const setting = (await this.getSettingService.handle({

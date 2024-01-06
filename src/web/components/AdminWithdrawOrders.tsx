@@ -10,7 +10,7 @@ import { webModule as projectWebModule } from '@roxavn/module-project/web';
 import { constants as projectConstants } from '@roxavn/module-project/base';
 import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
 
-import { transactionApi } from '../../base/index.js';
+import { withdrawApi } from '../../base/index.js';
 import { TaskStatus } from './MyWithdrawOrders.js';
 
 export function AdminWithdrawOrders() {
@@ -19,7 +19,7 @@ export function AdminWithdrawOrders() {
 
   return (
     <ApiTable
-      api={transactionApi.getWithdrawOrders}
+      api={withdrawApi.getMany}
       columns={{
         id: { label: tCore('id') },
         userId: { label: tCore('user'), reference: userService.reference },
@@ -50,7 +50,7 @@ export function AdminWithdrawOrders() {
                   title: tCore('reject'),
                   children: (
                     <ApiConfirmFormGroup
-                      api={transactionApi.rejectWithdrawOrder}
+                      api={withdrawApi.reject}
                       onCancel={closeModal}
                       apiParams={{ taskId: item.id }}
                     />
@@ -64,7 +64,7 @@ export function AdminWithdrawOrders() {
                   title: tCore('accept'),
                   children: (
                     <ApiConfirmFormGroup
-                      api={transactionApi.acceptWithdrawOrder}
+                      api={withdrawApi.accept}
                       onCancel={closeModal}
                       apiParams={{ taskId: item.id }}
                     />

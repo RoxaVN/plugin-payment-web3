@@ -39,14 +39,14 @@ import {
   NotFoundWeb3DepositSettingException,
   UpdateWeb3DepositSettingRequest,
   constants,
-  transactionApi,
+  depositApi,
 } from '../../base/index.js';
 import { webModule } from '../module.js';
 
 export interface Web3TokenDepositProps {
   networkId: string;
   contractAddress: `0x${string}`;
-  onSuccess?: (data: InferApiResponse<typeof transactionApi.deposit>) => void;
+  onSuccess?: (data: InferApiResponse<typeof depositApi.create>) => void;
 }
 
 export const Web3TokenDeposit = (props: Web3TokenDepositProps) => {
@@ -73,7 +73,7 @@ export const Web3TokenDeposit = (props: Web3TokenDepositProps) => {
   ) : settingItem ? (
     <ApiForm
       api={
-        transactionApi.deposit as Api<{
+        depositApi.create as Api<{
           transactionHash: string;
           contractAddress: string;
           networkId: string;
@@ -169,7 +169,7 @@ export const Web3Redeposit = (props: Web3RedepositProps) => {
 
   return (
     <ApiFormGroup
-      api={transactionApi.deposit}
+      api={depositApi.create}
       apiParams={{
         contractAddress: props.contractAddress,
         networkId: props.networkId,
