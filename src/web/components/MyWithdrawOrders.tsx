@@ -8,11 +8,13 @@ import {
 } from '@roxavn/core/web';
 import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as projectWebModule } from '@roxavn/module-project/web';
+import { webModule as web3WebModule } from '@roxavn/module-web3/web';
 import {
   TaskResponse,
   constants as projectConstants,
 } from '@roxavn/module-project/base';
 import dayjs from 'dayjs';
+import { useConfig } from 'wagmi';
 
 import { withdrawApi } from '../../base/index.js';
 
@@ -46,6 +48,8 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
   const user = useAuthUser();
   const tCore = coreWebModule.useTranslation().t;
   const tCurrency = currencyWebModule.useTranslation().t;
+  const tWeb3 = web3WebModule.useTranslation().t;
+  const config = useConfig();
 
   return (
     <ApiTable
@@ -96,6 +100,25 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
               }),
             },
           ];
+        } else if (item.metadata?.transactionHash) {
+          const chain = config.chains?.find(
+            (c) => c.id == item.metadata?.networkId
+          );
+          if (chain && chain.blockExplorers) {
+            const url = chain.blockExplorers.default.url;
+            return [
+              {
+                label: tWeb3('transaction'),
+                link: {
+                  href:
+                    url +
+                    (url.endsWith('/') ? '' : '/') +
+                    'tx/' +
+                    item.metadata?.transactionHash,
+                },
+              },
+            ];
+          }
         }
         return [];
       }}
