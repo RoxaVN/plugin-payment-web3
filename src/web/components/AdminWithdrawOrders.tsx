@@ -7,7 +7,7 @@ import {
 } from '@roxavn/core/web';
 import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as projectWebModule } from '@roxavn/module-project/web';
-import { taskApi } from '@roxavn/module-project/base';
+import { constants as projectConstants } from '@roxavn/module-project/base';
 
 import { transactionApi } from '../../base/index.js';
 import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
@@ -44,36 +44,40 @@ export function AdminWithdrawOrders() {
           reference: userService.reference,
         },
       }}
-      cellActions={(item) => [
-        {
-          label: tCore('reject'),
-          icon: IconCircleX,
-          modal: ({ closeModal }) => ({
-            title: 'deleteUserRole',
-            children: (
-              <ApiConfirmFormGroup
-                api={taskApi.reject}
-                onCancel={closeModal}
-                apiParams={{ taskId: item.id }}
-              />
-            ),
-          }),
-        },
-        {
-          label: tCore('accept'),
-          icon: IconCircleCheck,
-          modal: ({ closeModal }) => ({
-            title: 'deleteUserRole',
-            children: (
-              <ApiConfirmFormGroup
-                api={transactionApi.acceptWithdrawOrder}
-                onCancel={closeModal}
-                apiParams={{ taskId: item.id }}
-              />
-            ),
-          }),
-        },
-      ]}
+      cellActions={(item) =>
+        item.status === projectConstants.TaskStatus.PENDING
+          ? [
+              {
+                label: tCore('reject'),
+                icon: IconCircleX,
+                modal: ({ closeModal }) => ({
+                  title: 'deleteUserRole',
+                  children: (
+                    <ApiConfirmFormGroup
+                      api={transactionApi.rejectWithdrawOrder}
+                      onCancel={closeModal}
+                      apiParams={{ taskId: item.id }}
+                    />
+                  ),
+                }),
+              },
+              {
+                label: tCore('accept'),
+                icon: IconCircleCheck,
+                modal: ({ closeModal }) => ({
+                  title: 'deleteUserRole',
+                  children: (
+                    <ApiConfirmFormGroup
+                      api={transactionApi.acceptWithdrawOrder}
+                      onCancel={closeModal}
+                      apiParams={{ taskId: item.id }}
+                    />
+                  ),
+                }),
+              },
+            ]
+          : []
+      }
     />
   );
 }

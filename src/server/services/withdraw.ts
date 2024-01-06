@@ -17,7 +17,8 @@ import {
   GetProjectsApiService,
   GetProjectRootTaskApiService,
   GetSubtasksApiService,
-  AssignTaskApiService,
+  AssignTaskService,
+  RejectTaskApiService,
 } from '@roxavn/module-project/server';
 import {
   GetOrCreateUserService,
@@ -51,8 +52,8 @@ export class GetRootTaskForWithdrawService extends BaseService {
     protected createProjectService: CreateProjectService,
     @inject(GetProjectRootTaskApiService)
     protected getProjectRootTaskApiService: GetProjectRootTaskApiService,
-    @inject(AssignTaskApiService)
-    protected assignTaskApiService: AssignTaskApiService
+    @inject(AssignTaskService)
+    protected assignTaskService: AssignTaskService
   ) {
     super();
   }
@@ -79,7 +80,7 @@ export class GetRootTaskForWithdrawService extends BaseService {
         projectId: project.id,
       });
       if (!task.assignee) {
-        await this.assignTaskApiService.handle({
+        await this.assignTaskService.handle({
           taskId: task.id,
           userId: user.id,
         });
@@ -97,6 +98,8 @@ export class CreateWithdrawOrderApiService extends BaseService {
     protected getWeb3WithdrawSettingApiService: GetWeb3WithdrawSettingApiService,
     @inject(GetRootTaskForWithdrawService)
     protected getRootTaskForWithdrawService: GetRootTaskForWithdrawService,
+    @inject(CreatePaymentTransactionService)
+    protected createPaymentTransactionService: CreatePaymentTransactionService,
     @inject(CreateSubtaskService)
     protected createSubtaskService: CreateSubtaskService
   ) {
@@ -110,6 +113,15 @@ export class CreateWithdrawOrderApiService extends BaseService {
     // make sure currency is allowed to be withdrawn
     await this.getWeb3WithdrawSettingApiService.get({
       currencyId: request.currencyId,
+    });
+
+    await this.createPaymentTransactionService.handle({
+      account: {
+        userId: authUser.id,
+        amount: -request.amount,
+      },
+      currencyId: request.currencyId,
+      type: constants.Transaction.WEB3_WITHDRAW,
     });
 
     const rootTask = await this.getRootTaskForWithdrawService.handle();
@@ -126,31 +138,34 @@ export class CreateWithdrawOrderApiService extends BaseService {
   }
 }
 
-@serverModule.useApi(transactionApi.acceptWithdrawOrder)
-export class AcceptWithdrawOrderApiService extends BaseService {
+@serverModule.useApi(transactionApi.rejectWithdrawOrder)
+export class RejectWithdrawOrderApiService extends BaseService {
   constructor(
     @inject(GetTaskApiService)
     protected getTaskApiService: GetTaskApiService,
+    @inject(RejectTaskApiService)
+    protected rejectTaskApiService: RejectTaskApiService,
+    @inject(AssignTaskService)
+    protected assignTaskService: AssignTaskService,
     @inject(CreatePaymentTransactionService)
-    protected createPaymentTransactionService: CreatePaymentTransactionService,
-    @inject(GetUserIdentitiesApiService)
-    protected getUserIdentitiesApiService: GetUserIdentitiesApiService,
-    @inject(GetWeb3WithdrawSettingApiService)
-    protected getWeb3WithdrawSettingApiService: GetWeb3WithdrawSettingApiService,
-    @inject(GetWeb3ProvidersApiService)
-    protected getWeb3ProvidersApiService: GetWeb3ProvidersApiService
+    protected createPaymentTransactionService: CreatePaymentTransactionService
   ) {
     super();
   }
 
   async handle(
-    request: InferApiRequest<typeof transactionApi.acceptWithdrawOrder>
+    request: InferApiRequest<typeof transactionApi.rejectWithdrawOrder>,
+    @AuthUser authUser: InferContext<typeof AuthUser>
   ) {
-    const task = await this.getTaskApiService.handle({
+    await this.rejectTaskApiService.handle({
       taskId: request.taskId,
     });
-    const setting = await this.getWeb3WithdrawSettingApiService.get({
-      currencyId: task.metadata?.currencyId,
+    await this.assignTaskService.handle({
+      taskId: request.taskId,
+      userId: authUser.id,
+    });
+    const task = await this.getTaskApiService.handle({
+      taskId: request.taskId,
     });
     await this.createPaymentTransactionService.handle({
       account: {
@@ -159,6 +174,41 @@ export class AcceptWithdrawOrderApiService extends BaseService {
       },
       currencyId: task.metadata?.currencyId,
       type: constants.Transaction.WEB3_WITHDRAW,
+    });
+    return {};
+  }
+}
+
+@serverModule.useApi(transactionApi.acceptWithdrawOrder)
+export class AcceptWithdrawOrderApiService extends BaseService {
+  constructor(
+    @inject(GetTaskApiService)
+    protected getTaskApiService: GetTaskApiService,
+    @inject(GetUserIdentitiesApiService)
+    protected getUserIdentitiesApiService: GetUserIdentitiesApiService,
+    @inject(GetWeb3WithdrawSettingApiService)
+    protected getWeb3WithdrawSettingApiService: GetWeb3WithdrawSettingApiService,
+    @inject(GetWeb3ProvidersApiService)
+    protected getWeb3ProvidersApiService: GetWeb3ProvidersApiService,
+    @inject(AssignTaskService)
+    protected assignTaskService: AssignTaskService
+  ) {
+    super();
+  }
+
+  async handle(
+    request: InferApiRequest<typeof transactionApi.acceptWithdrawOrder>,
+    @AuthUser authUser: InferContext<typeof AuthUser>
+  ) {
+    const task = await this.getTaskApiService.handle({
+      taskId: request.taskId,
+    });
+    const setting = await this.getWeb3WithdrawSettingApiService.get({
+      currencyId: task.metadata?.currencyId,
+    });
+    await this.assignTaskService.handle({
+      taskId: task.id,
+      userId: authUser.id,
     });
 
     const providers = await this.getWeb3ProvidersApiService.handle({

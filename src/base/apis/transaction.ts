@@ -45,6 +45,8 @@ class AcceptWithdrawOrderRequest extends ExactProps<AcceptWithdrawOrderRequest> 
   taskId: string;
 }
 
+const RejectWithdrawOrderRequest = AcceptWithdrawOrderRequest;
+
 class GetWithdrawOrdersRequest extends PaginationRequest<GetWithdrawOrdersRequest> {
   @MinLength(1)
   @IsOptional()
@@ -62,7 +64,7 @@ export const transactionApi = {
   >({
     path: transactionSource.apiPath() + '/deposit',
     validator: DepositTransactionRequest,
-    permission: permissions.DepositTransaction,
+    permission: permissions.Deposit,
   }),
   createWithdrawOrder: transactionSource.create<
     WithdrawOrderRequest,
@@ -70,7 +72,7 @@ export const transactionApi = {
   >({
     path: transactionSource.apiPath() + '/withdraw-order',
     validator: WithdrawOrderRequest,
-    permission: permissions.WithdrawTransaction,
+    permission: permissions.CreateWithdrawOrder,
   }),
   acceptWithdrawOrder: transactionSource.create<
     AcceptWithdrawOrderRequest,
@@ -78,6 +80,14 @@ export const transactionApi = {
   >({
     path: transactionSource.apiPath() + '/accept-withdraw-order',
     validator: AcceptWithdrawOrderRequest,
+    permission: paymentPermissions.ConfirmOrder,
+  }),
+  rejectWithdrawOrder: transactionSource.create<
+    AcceptWithdrawOrderRequest,
+    Empty
+  >({
+    path: transactionSource.apiPath() + '/reject-withdraw-order',
+    validator: RejectWithdrawOrderRequest,
     permission: paymentPermissions.ConfirmOrder,
   }),
   getWithdrawOrders: transactionSource.custom<

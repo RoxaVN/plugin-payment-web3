@@ -7,6 +7,6 @@ export const scopes = accessManager.makeScopes(baseModule, {
 });
 
 export const permissions = accessManager.makePermissions(scopes, {
-  DepositTransaction: { allowedScopes: [accessManager.scopes.AuthUser] },
-  WithdrawTransaction: { allowedScopes: [accessManager.scopes.AuthUser] },
+  Deposit: { allowedScopes: [accessManager.scopes.AuthUser] },
+  CreateWithdrawOrder: { allowedScopes: [accessManager.scopes.AuthUser] },
 });
