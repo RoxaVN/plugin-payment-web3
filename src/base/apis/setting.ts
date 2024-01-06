@@ -4,6 +4,7 @@ import {
   ArrayMinSize,
   ExactProps,
   IsArray,
+  IsEthereumAddress,
   IsFormula,
   MinLength,
   NotFoundException,
@@ -11,6 +12,7 @@ import {
   ValidateNested,
 } from '@roxavn/core/base';
 import { SettingResponse, permissions } from '@roxavn/module-utils/base';
+import { IsEthereumPrivateKey } from '@roxavn/module-web3/base';
 
 import { baseModule } from '../module.js';
 
@@ -20,13 +22,13 @@ const settingSource = new ApiSource<SettingResponse>(
 );
 
 class Web3DepositSettingItem {
-  @MinLength(1)
+  @IsEthereumAddress()
   contractAddress: `0x${string}`;
 
   @MinLength(1)
   networkId: string;
 
-  @MinLength(1)
+  @IsEthereumAddress()
   recipientAddress: `0x${string}`;
 
   @MinLength(1)
@@ -37,13 +39,13 @@ class Web3DepositSettingItem {
 }
 
 class Web3WithdrawSettingItem {
-  @MinLength(1)
+  @IsEthereumAddress()
   contractAddress: `0x${string}`;
 
   @MinLength(1)
   networkId: string;
 
-  @MinLength(1)
+  @IsEthereumPrivateKey()
   senderPrivateKey: `0x${string}`;
 
   @MinLength(1)

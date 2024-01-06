@@ -1,20 +1,20 @@
 import {
   ApiConfirmFormGroup,
   ApiTable,
+  JSONTree,
   webModule as coreWebModule,
   userService,
   utils,
 } from '@roxavn/core/web';
-import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as projectWebModule } from '@roxavn/module-project/web';
 import { constants as projectConstants } from '@roxavn/module-project/base';
+import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
 
 import { transactionApi } from '../../base/index.js';
-import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
+import { TaskStatus } from './MyWithdrawOrders.js';
 
 export function AdminWithdrawOrders() {
   const tCore = coreWebModule.useTranslation().t;
-  const tCurrency = currencyWebModule.useTranslation().t;
   const tProject = projectWebModule.useTranslation().t;
 
   return (
@@ -27,21 +27,17 @@ export function AdminWithdrawOrders() {
           label: tCore('createdDate'),
           render: utils.Render.datetime,
         },
-        metadata: {
-          label: tCurrency('amount'),
-          render: (value) => utils.Render.number(value?.amount),
-        },
-        startedDate: {
-          label: tCurrency('currencyId'),
-          render: (_, item) => item.metadata?.currencyId,
-        },
         status: {
           label: tCore('status'),
-          render: (value) => tProject(value),
+          render: (_, item) => <TaskStatus task={item} />,
         },
         assignee: {
           label: tProject('assignee'),
           reference: userService.reference,
+        },
+        metadata: {
+          label: tCore('metadata'),
+          render: (value) => <JSONTree data={value} />,
         },
       }}
       cellActions={(item) =>
@@ -51,7 +47,7 @@ export function AdminWithdrawOrders() {
                 label: tCore('reject'),
                 icon: IconCircleX,
                 modal: ({ closeModal }) => ({
-                  title: 'deleteUserRole',
+                  title: tCore('reject'),
                   children: (
                     <ApiConfirmFormGroup
                       api={transactionApi.rejectWithdrawOrder}
@@ -65,7 +61,7 @@ export function AdminWithdrawOrders() {
                 label: tCore('accept'),
                 icon: IconCircleCheck,
                 modal: ({ closeModal }) => ({
-                  title: 'deleteUserRole',
+                  title: tCore('accept'),
                   children: (
                     <ApiConfirmFormGroup
                       api={transactionApi.acceptWithdrawOrder}

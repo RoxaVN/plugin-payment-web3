@@ -11,6 +11,7 @@ import {
 import { webModule as currencyWebModule } from '@roxavn/module-currency/web';
 import { webModule as projectWebModule } from '@roxavn/module-project/web';
 import {
+  TaskResponse,
   constants as projectConstants,
   taskApi,
 } from '@roxavn/module-project/base';
@@ -18,6 +19,32 @@ import {
 import { transactionApi } from '../../base/index.js';
 import { useRef } from 'react';
 import { InferApiRequest } from '@roxavn/core';
+
+export function TaskStatus({ task }: { task: TaskResponse }) {
+  const tProject = projectWebModule.useTranslation().t;
+  switch (task.status) {
+    case projectConstants.TaskStatus.CANCELED:
+      return (
+        <Tooltip label={utils.Render.datetime(task.canceledDate)}>
+          <span>{tProject(task.status)}</span>
+        </Tooltip>
+      );
+    case projectConstants.TaskStatus.FINISHED:
+      return (
+        <Tooltip label={utils.Render.datetime(task.finishedDate)}>
+          <span>{tProject(task.status)}</span>
+        </Tooltip>
+      );
+    case projectConstants.TaskStatus.REJECTED:
+      return (
+        <Tooltip label={utils.Render.datetime(task.rejectedDate)}>
+          <span>{tProject(task.status)}</span>
+        </Tooltip>
+      );
+    default:
+      return <span>{tProject(task.status)}</span>;
+  }
+}
 
 export function MyWithdrawOrders(props: { currencyId: string }) {
   const user = useAuthUser();
@@ -49,7 +76,7 @@ export function MyWithdrawOrders(props: { currencyId: string }) {
         },
         status: {
           label: tCore('status'),
-          render: (value) => tProject(value),
+          render: (_, item) => <TaskStatus task={item} />,
         },
         startedDate: {
           label: '',
