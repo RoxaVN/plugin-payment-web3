@@ -1,6 +1,6 @@
 {
   "name": "@roxavn/plugin-payment-web3",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "roxavn build",
